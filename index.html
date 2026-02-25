@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Transaction</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body {
+    min-height: 100%;
+    background: black;
+    font-family: 'Inter', -apple-system, 'SF Pro Text', 'SF Pro Display', 'Helvetica Neue', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+
+  #screen {
+    max-width: 430px;
+    margin: 0 auto;
+    background: #ffffff;
+    min-height: 100vh;
+    padding-bottom: 40px;
+  }
+
+  /* ── TOP WRAPPER — grey bg behind the rounded modal ── */
+  .top-wrapper {
+    background: black;
+    padding-top: 0;
+  }
+
+  /* ── STATUS BAR — grey area above modal ── */
+  .status-bar {
+    background: #b2b2b2;
+    height: 10px;
+    width: 95%;
+    margin: 0 auto;
+    border-radius: 97px 77px 0 0;
+  }
+
+  /* ── MODAL SHEET — iOS bottom-sheet with rounded top ── */
+  .modal-sheet {
+    background: #ffffff;
+    border-radius: 14px 14px 0 0;
+    overflow: hidden;
+  }
+
+  /* ── DRAG HANDLE — white, continuous with header ── */
+  .drag-area {
+    background: #ffffff;
+    padding: 10px 0 4px;
+    display: flex;
+    justify-content: center;
+  }
+
+  .drag-bar {
+    width: 65px;
+    height: 5px;
+    background: #e4e8ee;
+    border-radius: 2.5px;
+  }
+
+  /* ── TOP BAR — white bg ── */
+  .top-bar {
+    background: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 16px 12px;
+  }
+
+  .tb-help {
+    width: 28px;
+    height: 28px;
+    border: 3.5px solid #171720;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    color: #171720;
+    font-weight: 700;
+    flex-shrink: 0;
+    line-height: 1;
+    padding-bottom: 1px;
+    font-family: 'Inter', -apple-system, sans-serif;
+  }
+
+  .tb-center {
+    text-align: center;
+    flex: 1;
+    padding: 0 10px;
+  }
+
+  .tb-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: #1c1c1e;
+    line-height: 1.25;
+    letter-spacing: -0.3px;
+  }
+
+  .tb-date {
+    font-size: 13px;
+    color: #8e8e93;
+    font-weight: 400;
+    margin-top: 2px;
+    letter-spacing: -0.1px;
+  }
+
+  .tb-close {
+    width: 30px; height: 30px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    cursor: pointer;
+  }
+
+  .close-circle {
+    width: 26px; height: 26px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+  }
+
+  .close-circle svg {
+    width: 26px;
+    height: 34px;
+    color: black;  }
+
+  /* ── AMOUNT — white bg ── */
+  .amount-block {
+    background: #fff;
+    padding: 2px 20px 24px;
+  }
+
+  .amount-main {
+    font-size: 31px;
+    font-weight: 800;
+    color: #222228;
+    letter-spacing: -1px;
+    line-height: 1.12;
+  }
+
+  .amount-sub {
+    font-size: 15px;
+    color: #8e8e93;
+    font-weight: 400;
+    margin-top: 5px;
+    letter-spacing: -0.1px;
+  }
+
+  /* spacer between white header and card sections */
+  .spacer { height: 30px; background: #ffffff; }
+
+  /* ── SECTION GROUP — rounded card ── */
+  .section-group {
+    margin: 0 20px 16px;
+    border-radius: 14px;
+    overflow: hidden;
+    background: #f2f2f7;
+  }
+
+  .section-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 15px 16px;
+    background: #f8f9fb;
+    gap: 12px;
+    position: relative;
+  }
+
+  .section-row::after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: 16px;
+    right: 16px;
+    height: 0.5px;
+    background-color: #d1d1d6;
+  }
+
+  .section-row:last-child::after { display: none; }
+
+  .row-key {
+    font-size: 15px;
+    color: #8e8e93;
+    font-weight: 400;
+    flex-shrink: 0;
+    letter-spacing: -0.15px;
+  }
+
+  .row-val {
+    font-size: 15px;
+    color: #1c1c1e;
+    font-weight: 700;
+    text-align: right;
+    max-width: 65%;
+    word-break: break-word;
+    letter-spacing: -0.15px;
+  }
+
+  /* ── ID SECTION (standalone card) ── */
+  .id-section {
+    background: #f8f9fb;
+    border-radius: 14px;
+    margin: 0 20px 16px;
+    overflow: hidden;
+  }
+
+  .id-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 15px 16px;
+    gap: 12px;
+  }
+
+  .id-label {
+    font-size: 15px;
+    color: #8e8e93;
+    font-weight: 400;
+    flex-shrink: 0;
+  }
+
+  .id-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+  }
+
+  .id-val {
+    font-size: 13px;
+    font-weight: 700;
+    color: #181821;
+    letter-spacing: 0.3px;
+    word-break: break-all;
+    text-align: right;
+  }
+
+  .id-copy {
+    flex-shrink: 0;
+    color: #08121d;
+    display: flex;
+    align-items: center;
+  }
+
+  /* ── HELP ROW ── */
+  .help-section {
+    background: #f8f9fb;
+    border-radius: 14px;
+    margin: 0 20px 20px;
+  }
+
+  .help-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 16px;
+  }
+
+  .help-label {
+    font-size: 15px;
+    color: #8e8e93;
+    font-weight: 400;
+    letter-spacing: -0.15px;
+  }
+
+  .help-chevron {
+    font-size: 20px;
+    color: #212530;
+    font-weight: 300;
+    line-height: 1;
+  }
+
+  /* ── SHARE BTN ── */
+  .share-wrap {
+    display: flex;
+    justify-content: center;
+    padding: 6px 0 0;
+  }
+
+  .share-btn {
+    width: 64px;
+    height: 64px;
+    background: #171722;
+    border-radius: 64%;
+    display: flex;
+    align-items: center;
+    justify-content: center;  }
+
+  /* ── EDITABLE ── */
+  [contenteditable="true"] {
+    outline: none;
+    cursor: text;
+    border-radius: 2px;
+    min-width: 4px;
+  }
+</style>
+</head>
+<body>
+<div id="screen">
+  <div class="hover" style="background: black;">
+    <div class="status-bar"></div>
+  </div>
+
+  <!-- top wrapper: grey bg behind modal's rounded corners -->
+  <div class="top-wrapper">
+    <!-- thin dark status bar -->
+    <!-- iOS modal sheet with rounded top corners -->
+    <div class="modal-sheet">
+
+  <!-- drag handle (white, continuous with header) -->
+  <div class="drag-area">
+    <div class="drag-bar"></div>
+  </div>
+
+  <!-- top bar (white) -->
+  <div class="top-bar">
+    <div class="tb-help">?</div>
+    <div class="tb-center">
+      <div class="tb-title" contenteditable="true" spellcheck="false">Christian Dior Italia s</div>
+      <div class="tb-date"  contenteditable="true" spellcheck="false">24 лют. 2026, 19:37</div>
+    </div>
+    <div class="tb-close">
+      <div class="close-circle">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#000000" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18"/>
+          <line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </div>
+    </div>
+  </div>
+
+  <!-- amount (white) -->
+  <div class="amount-block">
+    <div class="amount-main" contenteditable="true" spellcheck="false">-1 944.34 USD</div>
+    <div class="amount-sub"  contenteditable="true" spellcheck="false">1 650 EUR</div>
+  </div>
+
+  </div><!-- end .modal-sheet -->
+  </div><!-- end .top-wrapper -->
+
+  <!-- grey gap -->
+  <div class="spacer"></div>
+
+  <!-- ID card -->
+  <div class="id-section">
+    <div class="id-row">
+      <div class="id-label">ID</div>
+      <div class="id-right">
+        <div class="id-val" contenteditable="true" spellcheck="false">01KJ8BNAKMQKT87QYP1K7XKSY7</div>
+        <div class="id-copy">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="9" y="9" width="13" height="13" rx="2"/>
+            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+          </svg>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Сума / Картка / Сума платежу -->
+  <div class="section-group">
+    <div class="section-row">
+      <span class="row-key">Сума</span>
+      <span class="row-val" contenteditable="true" spellcheck="false">1 944.34 USD</span>
+    </div>
+    <div class="section-row">
+      <span class="row-key">Картка</span>
+      <span class="row-val" contenteditable="true" spellcheck="false">USD · 2241</span>
+    </div>
+    <div class="section-row">
+      <span class="row-key">Сума платежу</span>
+      <span class="row-val" contenteditable="true" spellcheck="false">1 650 EUR</span>
+    </div>
+  </div>
+
+  <!-- Тип / Продавець -->
+  <div class="section-group">
+    <div class="section-row">
+      <span class="row-key">Тип</span>
+      <span class="row-val" contenteditable="true" spellcheck="false">Оплата</span>
+    </div>
+    <div class="section-row">
+      <span class="row-key">Продавець</span>
+      <span class="row-val" contenteditable="true" spellcheck="false">Christian Dior Italia s</span>
+    </div>
+  </div>
+
+  <!-- Дата / Опис -->
+  <div class="section-group">
+    <div class="section-row">
+      <span class="row-key">Дата / час</span>
+      <span class="row-val" contenteditable="true" spellcheck="false">24 лют. 2026, 19:37</span>
+    </div>
+    <div class="section-row">
+      <span class="row-key">Опис</span>
+      <span class="row-val" contenteditable="true" spellcheck="false">rIMilanITA</span>
+    </div>
+  </div>
+
+  <!-- Отримати допомогу -->
+  <div class="help-section">
+    <div class="help-row">
+      <span class="help-label">Отримати допомогу</span>
+      <span class="help-chevron">›</span>
+    </div>
+  </div>
+
+  <!-- share -->
+  <div class="share-wrap">
+    <div class="share-btn">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="#171722" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M4 12v7a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-7"/>
+        <polyline points="16 6 12 2 8 6"/>
+        <line x1="12" y1="2" x2="12" y2="15"/>
+      </svg>
+    </div>
+  </div>
+
+</div>
+<script>
+  document.querySelectorAll('[contenteditable]').forEach(el => {
+    el.addEventListener('keydown', e => {
+      if (e.key === 'Enter') { e.preventDefault(); el.blur(); }
+    });
+  });
+</script>
+</body>
+</html>
